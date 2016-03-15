@@ -9,4 +9,4 @@ This code includes routines for communicating via the subaru select monitor prot
 I want to encourage the adaptation and implementation of this code in other projects.
 Please post questions or ideas to the above forum to support constructive dialogue.
 
--David
+-Obeisance
