@@ -23,7 +23,7 @@ Intake air temperature: 0x000012
 //msg format = {header,to,from,# data bytes,read type flag(?),continuous response request flag,addr part 1,addr part 2, addr part 3,..., checksum}
 uint8_t pollECU_pressure[13] = {128, 16, 240, 8, 168, 0, 0x02, 0x00, 0xEA, 0x02, 0x00, 0xEB, 0x09}; //response [X,X]
 uint8_t pollECU_AF[13] = {128, 16, 240, 8, 168, 0, 0x02, 0x09, 0x52, 0x02, 0x09, 0x53, 0xEB}; //response [X,X]
-uint8_t pollECU_Coolant[10] = {128, 16, 240, 8, 168, 0, 0x00, 0x00, 0x08, 0x38}; //response [X,X]-> I combined both coolant meas requests; I think this gives redundant info, though
+uint8_t pollECU_Coolant[10] = {128, 16, 240, 5, 168, 0, 0x00, 0x00, 0x08, 0x35}; //response [X]
 uint8_t pollECU_BattVolt[10] = {128, 16, 240, 5, 168, 0, 0x00, 0x00, 0x1C, 0x49}; //response [X]
 uint8_t pollECU_IAT[10] = {128, 16, 240, 5, 168, 0, 0x00, 0x00, 0x12, 0x3F}; //response [X]
 
@@ -346,6 +346,16 @@ boolean readSSM(SoftwareSerial &serialPort, uint8_t *dataBuffer, uint16_t buffer
 
 //writes data over the software serial port
 void writeSSM(SoftwareSerial &serialPort, uint8_t *dataBuffer, uint8_t bufferSize) {
+  //this function needs to catch mistakes that I make in preparing 
+  //the packets -> {128, 16, 240, #data, 168, cont. response flag, addr1,addr2,addr3,checksum} = 10 bytes, 5 of which are data
+  dataBuffer[0] = 128;//begin packet
+  dataBuffer[1] = 16;//to subaru ECU
+  dataBuffer[2] = 240;//from diagnostic tool
+  //number of data bytes include 3*(number of addresses), cont. response flag, and mode (address read)
+  //this means that the header, to, from, #data, and checksum are not part.
+  dataBuffer[3] = bufferSize - 5;//# data bytes
+  dataBuffer[4] = 168;//single address read
+  dataBuffer[5] = 0;//no continuous polling
   uint8_t sum = 0;
   Serial.print(F("Sending packet: [ "));
   for (uint8_t x = 0; x < bufferSize; x++) {
