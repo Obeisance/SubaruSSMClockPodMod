@@ -8,6 +8,7 @@ SoftwareSerial kLine = SoftwareSerial(10, 11); //Rx, Tx
 //button to switch between modes
 //consider adding two buttons to cycle up and down
 #define buttonPin 2
+boolean lastButtonState = false;
 
 //ECU variables
 /*here are the addresses we want:
@@ -136,7 +137,7 @@ void loop() {
   //make sure the parameter we are polling for is correctly indexed
   boolean button = digitalRead(buttonPin);//read the state of the 'switch parameter' button-> pull to high voltage to switch state
   //then, adjust the parameter we plan to poll next
-  if(button)
+  if(button && !lastButtonState)
   {
     parameterSelect += 1;
     if(parameterSelect > 4)
@@ -153,6 +154,7 @@ void loop() {
       parameterSelect = 4;
     }
   }
+  lastButtonState = button;//keep track of this so that each button press only increments the index by 1
 
 if(parameterSelect == 0)
 {
